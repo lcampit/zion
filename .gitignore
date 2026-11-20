@@ -1,0 +1,5 @@
+talosconfig
+kubeconfig
+controplane.yaml
+worker.yaml 
+secrets.yaml 
