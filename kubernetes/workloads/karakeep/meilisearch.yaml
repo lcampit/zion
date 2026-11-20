@@ -21,7 +21,7 @@ spec:
           env:
             - name: MEILI_NO_ANALYTICS
               value: "true"
-            - name: MAILI_MASTER_KEY
+            - name: MEILI_MASTER_KEY
               valueFrom:
                 secretKeyRef:
                   name: karakeep-secrets
@@ -39,7 +39,7 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            volumeName: meilisearch-pvc
+            claimName: meilisearch-pvc
 ---
 apiVersion: v1
 kind: Service

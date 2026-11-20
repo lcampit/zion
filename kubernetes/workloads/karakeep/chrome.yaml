@@ -39,4 +39,3 @@ spec:
     app: chrome
   ports:
     - port: 9222
----
