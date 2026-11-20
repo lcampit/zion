@@ -3,3 +3,8 @@ kubeconfig
 controplane.yaml
 worker.yaml 
 secrets.yaml 
+.local/
+
+*.age 
+age.key 
+keys.txt
