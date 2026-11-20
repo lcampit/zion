@@ -31,7 +31,7 @@ spec:
             - secretRef:
                 name: karakeep-secrets
             - configMapRef:
-                name: karakeep_configuration
+                name: karakeep-configuration
           volumeMounts:
             - name: data
               mountPath: /data
