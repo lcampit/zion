@@ -11,6 +11,9 @@ spec:
     targetRevision: 1.13.0
     helm:
       valuesObject:
+        # As per longhorn docs, disable this job when deploying with argoCD
+        preUpgradeChecker:
+          jobEnabled: false
         persistence:
           defaultClass: true
           defaultClassReplicaCount: 1
