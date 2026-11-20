@@ -8,3 +8,7 @@ secrets.yaml
 *.age 
 age.key 
 keys.txt
+
+talos/_out
+talos/secrets*.yaml
+talos/local

@@ -1,0 +1,19 @@
+machine:
+  network:
+    interfaces:
+      - interface: eno1
+        dhcp: true
+        vip:
+          ip: 192.168.1.200
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: neo
+auto: off
+---
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+provisioning:
+  diskSelector:
+    match: disk.dev_path == "/dev/nvme0n1"
+  wipe: false
