@@ -1,0 +1,67 @@
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # the volume is ReadWriteOnce: never two pods at once
+  selector:
+    matchLabels:
+      app: karakeep-web
+  template:
+    metadata:
+      labels:
+        app: karakeep-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/karakeep-app/karakeep:0.35.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MEILI_ADDR
+              value: http://meilisearch:7700
+            - name: BROWSER_WEB_URL
+              value: http://chrome:9222
+            - name: DATA_DIR
+              value: /data
+          envFrom:
+            - secretRef:
+                name: karakeep-secrets
+            - configMapRef:
+                name: karakeep_configuration
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 2Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: karakeep-tailscale
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - karakeep
+  defaultBackend:
+    service:
+      name: web
+      port:
+        number: 3000

@@ -1,0 +1,42 @@
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chrome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chrome
+  template:
+    metadata:
+      labels:
+        app: chrome
+    spec:
+      containers:
+        - name: chrome
+          image: ghrc.io/karakeep-app/karakeep-chrome:release
+          args:
+            - --disable-gpu
+            - --disable-dev-shm-usage
+            - --hide-scrollbars
+            - --disable-blink-features=AutomationControlled
+            - --window-size=1440,900
+          ports:
+            - containerPort: 9222
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chrome
+spec:
+  selector:
+    app: chrome
+  ports:
+    - port: 9222
+---
