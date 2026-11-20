@@ -54,14 +54,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: karakeep-tailscale
+  name: web
 spec:
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - karakeep
-  defaultBackend:
-    service:
-      name: web
-      port:
-        number: 3000
+  selector:
+    app: karakeep-web
+  ports:
+    - port: 3000
+      targetPort: 3000
