@@ -7,6 +7,7 @@ pipx = "1.18.19"
 "pipx:check-jsonschema" = "0.39.0"
 sops = "3.13.3"
 talosctl = "1.14.5"
+yq = "v4.47.2"
 
 [env]
 TALOSCONFIG = "{{config_root}}/talos/_out/talosconfig"

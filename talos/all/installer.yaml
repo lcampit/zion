@@ -1,0 +1,4 @@
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+installer:
+  image: factory.talos.dev/metal-installer/3fd91d15e6d15abdbdfccc77644f6a023dcd4d52d356947038ce7efcdbd60505:v1.14.5 # rewritten by 'just schematic'
