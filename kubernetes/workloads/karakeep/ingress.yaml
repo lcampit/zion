@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: karakeep-tailscale
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - karakeep
+  defaultBackend:
+    service:
+      name: web
+      port:
+        number: 3000

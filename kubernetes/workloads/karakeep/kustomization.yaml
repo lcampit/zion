@@ -4,3 +4,8 @@ namespace: karakeep
 resources:
   - namespace.yaml
   - pvc.yaml
+  - config.yaml
+  - chrome.yaml
+  - meilisearch.yaml
+  - web.yaml
+  - ingress.yaml
