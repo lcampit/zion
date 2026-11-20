@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: argocd
+  name: karakeep
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/lcampit/zion.git
     targetRevision: main
-    path: kubernetes/infrastructure/karakeep
+    path: kubernetes/workloads/karakeep
   destination:
     server: https://kubernetes.default.svc
     namespace: karakeep
