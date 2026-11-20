@@ -70,7 +70,7 @@ health:
   @ip=$(yq '[.nodes[] | select(.role=="controlplane")] | .[0].ip' {{cfg}}); \
     talosctl health -n $ip
 
-# loads talos/schematic.yaml on image factory and saves the schematic ID in cluster.yaml
+# load talos/schematic.yaml on image factory and saves the schematic ID in cluster.yaml
 schematic:
   @id=$(curl -sS -X POST --data-binary @talos/schematic.yaml https://factory.talos.dev/schematics | yq -p json '.id'); \
       test -n "$id" -a "$id" != null || { echo "unexpected response from Image Factory"; exit 1; }; \
@@ -85,3 +85,9 @@ upgrade node: build
     image=$(yq 'select(.kind == "UnattendedInstallConfig") | .installer.image' {{out}}/{{node}}.yaml); \
     test -n "$image" -a "$image" != null || { echo "no installer.image in {{node}}.yaml"; exit 1; }; \
     talosctl upgrade --image "$image" -n "$ip" -e "$ip" --wait 
+
+# install argo CD and hand control to it. Run once on a new cluster; safe to re-run
+bootstrap:
+  kubectl apply --server-side --force-conflicts -k kubernetes/infrastructure/argocd
+  kubectl -n argocd rollout status deploy/argocd-server --timeout=300s 
+  kubectl apply -f kubernetes/root.yaml
