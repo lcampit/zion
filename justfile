@@ -65,3 +65,7 @@ apply node mode="no-reboot": build
     test -n "$ip" -a "$ip" != null || { echo "unknown node encountered: {{node}}"; exit 1; }; \
     talosctl apply-config --mode {{mode}} -n "$ip" -e "$ip" -f {{out}}/{{node}}.yaml
 
+# query cluster health
+health:
+  ip=$(yq '[.nodes[] | select(.role=="controlplane")] | .[0].ip' {{cfg}}); \
+    talosctl health -n $ip
