@@ -1,0 +1,189 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: karakeep
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-karakeep
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: karakeep-data
+spec:
+  capacity:
+    storage: 50Gi # indicativo: i local PV non applicano quota
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-karakeep
+  local:
+    path: /var/mnt/karakeep
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values: ["neo"]
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: karakeep-data
+  namespace: karakeep
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-karakeep
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: karakeep-config
+  namespace: karakeep
+data:
+  DATA_DIR: /data
+  MEILI_ADDR: http://meilisearch:7700
+  BROWSER_WEB_URL: http://chrome:9222
+  NEXTAUTH_URL: http://192.168.1.111:30300
+  DISABLE_SIGNUPS: "false" # mettilo a "true" dopo aver creato il tuo utente
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chrome
+  namespace: karakeep
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: chrome }
+  template:
+    metadata:
+      labels: { app: chrome }
+    spec:
+      containers:
+        - name: chrome
+          image: zenika/alpine-chrome:123
+          args:
+            - --no-sandbox
+            - --disable-gpu
+            - --disable-dev-shm-usage
+            - --remote-debugging-address=0.0.0.0
+            - --remote-debugging-port=9222
+            - --hide-scrollbars
+          ports:
+            - containerPort: 9222
+          resources:
+            limits: { memory: 1Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chrome
+  namespace: karakeep
+spec:
+  selector: { app: chrome }
+  ports:
+    - port: 9222
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meilisearch
+  namespace: karakeep
+spec:
+  replicas: 1
+  strategy: { type: Recreate } # il volume è RWO: mai due pod insieme
+  selector:
+    matchLabels: { app: meilisearch }
+  template:
+    metadata:
+      labels: { app: meilisearch }
+    spec:
+      containers:
+        - name: meilisearch
+          image: getmeili/meilisearch:v1.13.3
+          env:
+            - name: MEILI_NO_ANALYTICS
+              value: "true"
+            - name: MEILI_MASTER_KEY
+              valueFrom:
+                secretKeyRef: { name: karakeep-secrets, key: MEILI_MASTER_KEY }
+          ports:
+            - containerPort: 7700
+          volumeMounts:
+            - { name: data, mountPath: /meili_data, subPath: meili }
+          resources:
+            limits: { memory: 1Gi }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: karakeep-data }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: meilisearch
+  namespace: karakeep
+spec:
+  selector: { app: meilisearch }
+  ports:
+    - port: 7700
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: karakeep
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: web }
+  template:
+    metadata:
+      labels: { app: web }
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/karakeep-app/karakeep:release
+          envFrom:
+            - configMapRef: { name: karakeep-config }
+          env:
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef: { name: karakeep-secrets, key: NEXTAUTH_SECRET }
+            - name: MEILI_MASTER_KEY
+              valueFrom:
+                secretKeyRef: { name: karakeep-secrets, key: MEILI_MASTER_KEY }
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - { name: data, mountPath: /data, subPath: app }
+          readinessProbe:
+            httpGet: { path: /, port: 3000 }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            limits: { memory: 2Gi }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: karakeep-data }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: karakeep
+spec:
+  type: NodePort
+  selector: { app: web }
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30300
