@@ -1,6 +1,6 @@
 # zion
 
-GitOps-managed [Talos Linux](https://www.talos.dev) Kubernetets homelab.
+GitOps-managed [Talos Linux](https://www.talos.dev) Kubernetes homelab.
 Every node has its own specific patch for node-related settings,
 while everything else is shared.
 
@@ -18,13 +18,14 @@ while everything else is shared.
 
 Versions are pinned in `talos/cluster.yaml`, `mise.toml` and
 the ArgoCD `Application` manifests.
+What is currently deployed is defined in `kubernetes/applications/`.
 
 ## How it works
 
 ```mermaid
 flowchart LR
   dev[Git push / PR] --> main[(main branch)]
-  main -->|poled| argo[ArgoCD]
+  main -->|polled| argo[ArgoCD]
   argo -->|syncs| k8s[Kubernetes workloads]
   just[just + talosctl] -->|machine config| talos[Talos node]
   talos --> k8s
@@ -65,11 +66,14 @@ mise.toml                   # pinned tool versions
 ```sh
 mise install                # install the pinned tools 
 just --list                 # all recipes 
+just check                  # validate talos/cluster.yaml
+just schematic              # register talos/scehamtic.yaml with Image Factory, update the installer image
+just kubeconfig <node>      # fetch the kubeconfig
 just diff <node>            # preview an OS config change 
 just apply <node>           # apply it, no reboot 
 just upgrade <node>         # upgrade talos to the image in talos/all/installer.yaml
 just health                 # cluster health
-just bootstrap              # install ArgoCD on a fresh cluter
+just bootstrap              # install ArgoCD on a fresh cluster
 ```
 
 ## Security model
@@ -79,16 +83,6 @@ Talos secrets bundle, generated config and kubeconfig
 files are git-ignored, Kubernetes Secrets are created out of band.
 - A pre-commit hook runs [gitleaks](https://github.com/gitleaks/gitleaks);
 `main` is protected (pull request required, no force push) and Github secret scanning is on.
-- Services are exposed only though Tailscale, never to the public internet.
-
-## Status and roadmap
-
-- [x] Talos node managed declaratively
-- [x] ArgoCD, longhorn
-- [ ] CI validation (schema, rendering, registry allowlist)
-- [ ] Automated version updates
-- [ ] OpenBao + External Secrets
-- [ ] Tailscale operator under GitOps
-- [ ] Hardening pass and Longhorn backups
+- Services are exposed only through Tailscale, never to the public internet.
 
 See [docs/disaster-recovery.md](docs/disaster-recovery.md) to rebuild the cluster.
