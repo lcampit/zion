@@ -67,7 +67,7 @@ mise.toml                   # pinned tool versions
 mise install                # install the pinned tools 
 just --list                 # all recipes 
 just check                  # validate talos/cluster.yaml
-just schematic              # register talos/scehamtic.yaml with Image Factory, update the installer image
+just schematic              # register talos/schematic.yaml with Image Factory, update the installer image
 just kubeconfig <node>      # fetch the kubeconfig
 just diff <node>            # preview an OS config change 
 just apply <node>           # apply it, no reboot 
@@ -82,7 +82,7 @@ just bootstrap              # install ArgoCD on a fresh cluster
 Talos secrets bundle, generated config and kubeconfig
 files are git-ignored, Kubernetes Secrets are created out of band.
 - A pre-commit hook runs [gitleaks](https://github.com/gitleaks/gitleaks);
-`main` is protected (pull request required, no force push) and Github secret scanning is on.
+`main` is protected (pull request required, no force push) and GitHub secret scanning is on.
 - Services are exposed only through Tailscale, never to the public internet.
 
 See [docs/disaster-recovery.md](docs/disaster-recovery.md) to rebuild the cluster.
