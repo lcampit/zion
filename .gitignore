@@ -1,6 +1,6 @@
 talosconfig
 kubeconfig
-controplane.yaml
+controlplane.yaml
 worker.yaml 
 secrets.yaml 
 .local/
