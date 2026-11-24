@@ -1,0 +1,6 @@
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: tailscale
+environment:
+  - TS_HOSTNAME=neo
+  - TS_ROUTES=192.168.1.111/32,192.168.1.200/32
