@@ -12,6 +12,7 @@ Rebuild the cluster from this repository on a fresh machine.
 | Talos PKI (encrypted) (`talos/secrets.sops.yaml`) | password manager + offline copy |
 | Kubernetes bootstrap secrets | password manager |
 | Longhorn volume data | not backed up yet |
+| Tailscale Auth key | single use key, need to create a new one |
 
 ## Procedure
 
